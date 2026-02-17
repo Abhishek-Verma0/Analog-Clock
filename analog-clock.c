@@ -60,7 +60,7 @@ void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32
 //  using gpu geometry to render thick  lines
 void DrawThickLine(SDL_Renderer* renderer,  float sx, float sy,float ex, float ey,float thickness,SDL_Color color)
 {
-    // direction vector
+    // dirxn vector
     float dx = ex - sx;
     float dy = ey - sy;
 
@@ -115,7 +115,7 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
       //  finding the ending point of line  where upto draw
       float edLine_x = center_x + (radius* 0.90f) * SDL_sinf(angle);
       float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
-      SDL_Color black = {0, 0, 0};
+      SDL_Color black = {0, 0, 0,255};
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,black);
 
@@ -125,11 +125,6 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
 
 
 
-//  we may use gpu geometry for more smooth rendereing 
-
-void drawCircleGPU(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uint32_t radius){
-    SDL_CreateGPUDevice(0, 0, "Device");
-}
 
 
 int main(){
