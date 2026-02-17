@@ -8,15 +8,13 @@
 #define WIDTH 600
 #define HEIGHT 600
 
+#define CENTER_X 300
+#define CENTER_Y 300
+#define RADIUS 250
 
 
 
-
-//  function for drawing circle using midPoint algorithm
-
-
-
-
+//  function for drawing circle using midPoint algorithm   circle which will represent frame of clock
 
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius)
 {
@@ -59,6 +57,32 @@ void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32
 
 
 
+//  
+
+//  function to render time on the clock 
+void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint32_t radius){
+   
+  
+   //  here calculated angle is converted to radian as sdl expects radian not degree
+   for (int h = 1; h <=12;h++){
+      float angle = h * 30.0f * (SDL_PI_F / 180.0f);
+
+      //  starting point of line for the time marking
+      float stLine_x = center_x + radius * SDL_sinf(angle);
+      float stLine_y = center_y - radius * SDL_cosf(angle);
+      //  finding the ending point of line  where upto draw
+      float edLine_x = center_x + (radius* 0.75f) * SDL_sinf(angle);
+      float edLine_y = center_y - (radius*0.75f) * SDL_cosf(angle);
+
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+      SDL_RenderLine(renderer,stLine_x, stLine_y, edLine_x, edLine_y);
+
+ 
+   }
+}
+
+
+
 //  we may use gpu geometry for more smooth rendereing 
 
 void drawCircleGPU(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uint32_t radius){
@@ -86,11 +110,14 @@ int main(){
             SDL_RenderClear(renderer);
             SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
             DrawCircle(renderer,300,300,250);
-            // DrawCircle(renderer,300,300,249);
-            // DrawCircle(renderer,300,300,298);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255,0);
-            SDL_RenderPoint(renderer, 300, 300);
+            DrawCircle(renderer,300,300,249);
+            DrawCircle(renderer,300,300,248);
+            //  function to draw hour line
+            drawHours(renderer, CENTER_X, CENTER_Y, RADIUS);
+
             SDL_RenderPresent(renderer);
+
+
     }
     
 }
