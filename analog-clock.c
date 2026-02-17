@@ -117,7 +117,11 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
       float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
       SDL_Color black = {0, 0, 0,255};
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,black);
+      if(h==12 || h==3 || h==6 || h==9){
+         
+         DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 8.0f,black);
+      }
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
 
  
    }
