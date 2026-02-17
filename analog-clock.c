@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<assert.h>
 #include<time.h>
-
+#include<math.h>
 
 #define WIDTH 600
 #define HEIGHT 600
@@ -57,7 +57,49 @@ void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32
 
 
 
-//  
+//  using gpu geometry to render thick  lines
+void DrawThickLine(SDL_Renderer* renderer,  float sx, float sy,float ex, float ey,float thickness,SDL_Color color)
+{
+    // direction vector
+    float dx = ex - sx;
+    float dy = ey - sy;
+
+    // normalize
+    float len = sqrtf(dx*dx + dy*dy);
+    if (len == 0) return;
+    dx /= len;
+    dy /= len;
+
+    // perpendicular vector scaled by half thickness
+    float px = -dy * (thickness / 2.0f);
+    float py =  dx * (thickness / 2.0f);
+
+    // 4 corners of the rectangle
+    SDL_Vertex vertices[4];
+
+    // SDL3 uses SDL_FColor
+    SDL_FColor fcolor = {
+        color.r / 255.0f,
+        color.g / 255.0f,
+        color.b / 255.0f,
+        color.a / 255.0f
+    };
+
+    vertices[0].position = (SDL_FPoint){ sx + px, sy + py }; // A
+    vertices[1].position = (SDL_FPoint){ ex + px, ey + py }; // B
+    vertices[2].position = (SDL_FPoint){ sx - px, sy - py }; // C
+    vertices[3].position = (SDL_FPoint){ ex - px, ey - py }; // D
+
+    for (int i = 0; i < 4; i++)
+        vertices[i].color = fcolor;
+
+    // 2 triangles making the quad
+    // triangle 1: A B C
+    // triangle 2: B C D
+    int indices[6] = { 0, 1, 2, 1, 2, 3 };
+
+    SDL_RenderGeometry(renderer, NULL, vertices, 4, indices, 6);
+}
 
 //  function to render time on the clock 
 void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint32_t radius){
@@ -71,11 +113,11 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
       float stLine_x = center_x + radius * SDL_sinf(angle);
       float stLine_y = center_y - radius * SDL_cosf(angle);
       //  finding the ending point of line  where upto draw
-      float edLine_x = center_x + (radius* 0.75f) * SDL_sinf(angle);
-      float edLine_y = center_y - (radius*0.75f) * SDL_cosf(angle);
-
+      float edLine_x = center_x + (radius* 0.90f) * SDL_sinf(angle);
+      float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
+      SDL_Color black = {0, 0, 0};
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-      SDL_RenderLine(renderer,stLine_x, stLine_y, edLine_x, edLine_y);
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,black);
 
  
    }
