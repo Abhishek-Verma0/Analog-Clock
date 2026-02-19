@@ -128,6 +128,29 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
 }
 
 
+//  function to draw second or minutes ticks 
+
+void secondHand(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uint32_t radius){
+ for (int h = 1; h <=60;h++){
+      float angle = h * 6.0f * (SDL_PI_F / 180.0f);
+   if (h % 5 == 0) continue;
+      //  starting point of line for the time marking
+      float stLine_x = center_x +  radius* 0.95f * SDL_sinf(angle);
+      float stLine_y = center_y - radius* 0.95f * SDL_cosf(angle);
+      //  finding the ending point of line  where upto draw
+      float edLine_x = center_x + (radius* 0.90f) * SDL_sinf(angle);
+      float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
+      SDL_Color black = {239, 191, 4,255};
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
+
+ 
+   
+}
+}
+
+
 
 
 
@@ -140,6 +163,7 @@ int main(){
     bool done = true;
     SDL_Renderer *renderer = NULL;
     renderer = SDL_CreateRenderer(window, NULL);
+    
 
     while(done){
         SDL_Event event;
@@ -149,12 +173,14 @@ int main(){
             }
             SDL_SetRenderDrawColor(renderer, 204, 204, 255, 0);
             SDL_RenderClear(renderer);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             DrawCircle(renderer,300,300,250);
             DrawCircle(renderer,300,300,249);
             DrawCircle(renderer,300,300,248);
+
             //  function to draw hour line
             drawHours(renderer, CENTER_X, CENTER_Y, RADIUS);
+            secondHand(renderer, CENTER_X, CENTER_Y, RADIUS);
 
             SDL_RenderPresent(renderer);
 
