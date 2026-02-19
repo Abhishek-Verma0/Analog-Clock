@@ -119,9 +119,9 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       if(h==12 || h==3 || h==6 || h==9){
          
-         DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 8.0f,black);
+         DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
       }
-      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,black);
 
  
    }
@@ -130,7 +130,7 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
 
 //  function to draw second or minutes ticks 
 
-void secondHand(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uint32_t radius){
+void secondTick(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uint32_t radius){
  for (int h = 1; h <=60;h++){
       float angle = h * 6.0f * (SDL_PI_F / 180.0f);
    if (h % 5 == 0) continue;
@@ -143,7 +143,7 @@ void secondHand(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uin
       SDL_Color black = {239, 191, 4,255};
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 2.0f,black);
 
  
    
@@ -151,7 +151,40 @@ void secondHand(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uin
 }
 
 
+//  function to get current time from pc 
+void getCurrentTime(int* hours, int* minutes, int* seconds)
+{
+    time_t rawtime;
+    time(&rawtime);
 
+    struct tm* timeinfo;
+    timeinfo = localtime(&rawtime);
+
+    *hours   = timeinfo->tm_hour;
+    *minutes = timeinfo->tm_min;
+    *seconds = timeinfo->tm_sec;
+}
+
+
+
+//  function to draw second hand other function for hour and minute will be similar just diffrence of movement 
+
+void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int seconds)
+{
+    SDL_Color red = {255, 0, 0, 255};
+
+    // each second = 6° (360° / 60 = 6°)
+    float angle = seconds * 6.0f * (SDL_PI_F / 180.0f);
+
+    float sx = cx;
+    float sy = cy;
+    
+    
+    float ex = cx + radius * 0.85f * SDL_sinf(angle);
+    float ey = cy - radius * 0.85f * SDL_cosf(angle);
+
+    DrawThickLine(renderer, sx, sy, ex, ey, 2.0f, red);
+}
 
 
 int main(){
@@ -171,6 +204,11 @@ int main(){
             if(event.type==SDL_EVENT_QUIT){
             done = false;
             }
+         }
+            //  getting time 
+            int hours, minutes, seconds;
+            getCurrentTime(&hours, &minutes, &seconds);
+
             SDL_SetRenderDrawColor(renderer, 204, 204, 255, 0);
             SDL_RenderClear(renderer);
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -180,12 +218,13 @@ int main(){
 
             //  function to draw hour line
             drawHours(renderer, CENTER_X, CENTER_Y, RADIUS);
-            secondHand(renderer, CENTER_X, CENTER_Y, RADIUS);
+            secondTick(renderer, CENTER_X, CENTER_Y, RADIUS);
 
+            // drawing hands of clock
+            drawSecondHand(renderer, CENTER_X, CENTER_Y, RADIUS, seconds);
             SDL_RenderPresent(renderer);
 
 
-    }
     
 }
 SDL_DestroyWindow(window);
