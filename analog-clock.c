@@ -249,8 +249,30 @@ void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int 
     float ex = cx + radius * 0.5f * SDL_sinf(angle);
     float ey = cy - radius * 0.5f * SDL_cosf(angle);
 
-    DrawThickLine(renderer, sx, sy, ex, ey, 5.0f, HAND_HOUR);
+    DrawThickLine(renderer, sx, sy, ex, ey, 4.0f, HAND_HOUR);
  }
+
+
+//  drawing circle at center of clock
+
+void drawCenterDot(SDL_Renderer* renderer, float cx, float cy)
+{
+    // draw small gold circle at center
+    for (int r = 0; r < 8; r++)
+    {
+        for (int a = 0; a < 360; a += 10)
+        {
+            float rad = a * (SDL_PI_F / 180.0f);
+            int x = (int)(cx + r * SDL_cosf(rad));
+            int y = (int)(cy + r * SDL_sinf(rad));
+            SDL_SetRenderDrawColor(renderer, RING_GOLD.r, RING_GOLD.g, RING_GOLD.b, 255);
+            SDL_RenderPoint(renderer, x, y);
+        }
+    }
+}
+
+
+
 
 int main(){
 
@@ -287,6 +309,10 @@ int main(){
             drawSecondHand(renderer, CENTER_X, CENTER_Y, RADIUS, seconds);
             drawMinuteHand(renderer, CENTER_X, CENTER_Y, RADIUS, minutes);
             drawHourHand(renderer, CENTER_X, CENTER_Y, RADIUS, hours, minutes);
+
+
+            //  drawing center
+            drawCenterDot(renderer, CENTER_X, CENTER_Y);
             SDL_RenderPresent(renderer);
 
 
