@@ -171,7 +171,7 @@ void getCurrentTime(int* hours, int* minutes, int* seconds)
 
 void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int seconds)
 {
-    SDL_Color red = {255, 0, 0, 255};
+    SDL_Color black = {0, 0, 0, 255};
 
     // each second = 6° (360° / 60 = 6°)
     float angle = seconds * 6.0f * (SDL_PI_F / 180.0f);
@@ -183,9 +183,48 @@ void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int 
     float ex = cx + radius * 0.85f * SDL_sinf(angle);
     float ey = cy - radius * 0.85f * SDL_cosf(angle);
 
-    DrawThickLine(renderer, sx, sy, ex, ey, 2.0f, red);
+    DrawThickLine(renderer, sx, sy, ex, ey, 1.0f, black);
 }
 
+
+//  for minute hand 
+ void drawMinuteHand(SDL_Renderer* renderer,uint32_t cx ,uint32_t cy, float radius,int minutes){
+    SDL_Color black = {0, 0, 0, 255};
+
+    // each second = 6° (360° / 60 = 6°)
+    float angle = minutes * 6.0f * (SDL_PI_F / 180.0f);
+
+    float sx = cx;
+    float sy = cy;
+    
+    
+    float ex = cx + radius * 0.75f * SDL_sinf(angle);
+    float ey = cy - radius * 0.75f * SDL_cosf(angle);
+
+    DrawThickLine(renderer, sx, sy, ex, ey, 2.0f, black);
+ }
+
+
+//   for hour hand 
+
+ void drawHourHand(SDL_Renderer* renderer,uint32_t cx ,uint32_t cy, float radius,int hour,int minutes){
+    SDL_Color black = {0, 0, 0, 255};
+
+    int hours12 = hour % 12;
+    
+
+    float angle = hours12 * 30.0f +minutes*0.5f;
+    angle *= (SDL_PI_F / 180.0f);
+
+    float sx = cx;
+    float sy = cy;
+    
+    
+    float ex = cx + radius * 0.5f * SDL_sinf(angle);
+    float ey = cy - radius * 0.5f * SDL_cosf(angle);
+
+    DrawThickLine(renderer, sx, sy, ex, ey, 5.0f, black);
+ }
 
 int main(){
 
@@ -222,6 +261,8 @@ int main(){
 
             // drawing hands of clock
             drawSecondHand(renderer, CENTER_X, CENTER_Y, RADIUS, seconds);
+            drawMinuteHand(renderer, CENTER_X, CENTER_Y, RADIUS, minutes);
+            drawHourHand(renderer, CENTER_X, CENTER_Y, RADIUS, hours, minutes);
             SDL_RenderPresent(renderer);
 
 
