@@ -12,47 +12,73 @@
 #define CENTER_Y 300
 #define RADIUS 250
 
+//  colors  may change on apppearance
+SDL_Color BG_COLOR       = {26,  29,  46,  255};  // dark blue-gray background
+SDL_Color RING_DARK      = {15,  20,  25,  255};  // outer ring dark
+SDL_Color RING_GOLD      = {212, 175, 55,  255};  // gold accent
+SDL_Color HOUR_MAJOR     = {212, 175, 55,  255};  // 12,3,6,9 gold
+SDL_Color HOUR_MINOR     = {138, 138, 158, 255};  // other hours gray
+SDL_Color MINUTE_TICK    = {74,  74,  94,  255};  // minute ticks subtle
+SDL_Color HAND_HOUR      = {212, 175, 55,  255};  // hour hand gold
+SDL_Color HAND_MINUTE    = {232, 232, 240, 255};  // minute hand silver
+SDL_Color HAND_SECOND    = {220, 20,  60,  255};  // second hand crimson
+
+
 
 
 //  function for drawing circle using midPoint algorithm   circle which will represent frame of clock
 
-void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius)
+//  new alog uses gpu to draw circle
+void DrawCircleOutline(SDL_Renderer* renderer, float cx, float cy,float radius, float thickness,SDL_Color color, int segments)
 {
-   const int32_t diameter = (radius * 2);
+    int vertCount = (segments + 1) * 2;
+    int idxCount  = segments * 6;
 
-   int32_t x = (radius - 1);
-   int32_t y = 0;
-   int32_t tx = 1;
-   int32_t ty = 1;
-   int32_t error = (tx - diameter);
+    SDL_Vertex* verts   = malloc(vertCount * sizeof(SDL_Vertex));
+    int*        indices = malloc(idxCount  * sizeof(int));
+    if (!verts || !indices) { free(verts); free(indices); return; }
 
-   while (x >= y)
-   
-   {
-      //  Each of the following renders an octant of the circle
-      SDL_RenderPoint(renderer, centreX + x, centreY + y);
-      SDL_RenderPoint(renderer, centreX + x, centreY - y);
-      SDL_RenderPoint(renderer, centreX - x, centreY - y);
-      SDL_RenderPoint(renderer, centreX - x, centreY + y);
-      SDL_RenderPoint(renderer, centreX + y, centreY - x);
-      SDL_RenderPoint(renderer, centreX + y, centreY + x);
-      SDL_RenderPoint(renderer, centreX - y, centreY - x);
-      SDL_RenderPoint(renderer, centreX - y, centreY + x);
+    SDL_FColor fc = {
+        color.r / 255.0f,
+        color.g / 255.0f,
+        color.b / 255.0f,
+        color.a / 255.0f
+    };
 
-      if (error <= 0)
-      {
-         ++y;
-         error += ty;
-         ty += 2;
-      }
+    float innerR = radius - thickness / 2.0f;
+    float outerR = radius + thickness / 2.0f;
 
-      if (error > 0)
-      {
-         --x;
-         tx += 2;
-         error += (tx - diameter);
-      }
-   }
+    // create vertices
+    for (int i = 0; i <= segments; i++)
+    {
+        float angle = (2.0f * SDL_PI_F * i) / segments;
+        float nx = SDL_cosf(angle);
+        float ny = SDL_sinf(angle);
+
+        // outer vertex
+        verts[i*2+0].position = (SDL_FPoint){ cx + nx * outerR, cy + ny * outerR };
+        verts[i*2+0].color    = fc;
+
+        // inner vertex
+        verts[i*2+1].position = (SDL_FPoint){ cx + nx * innerR, cy + ny * innerR };
+        verts[i*2+1].color    = fc;
+    }
+
+    // create indices (2 triangles per segment)
+    for (int i = 0; i < segments; i++)
+    {
+        int b = i * 2;
+        indices[i*6+0] = b+0;
+        indices[i*6+1] = b+1;
+        indices[i*6+2] = b+2;
+        indices[i*6+3] = b+1;
+        indices[i*6+4] = b+2;
+        indices[i*6+5] = b+3;
+    }
+
+    SDL_RenderGeometry(renderer, NULL, verts, vertCount, indices, idxCount);
+    free(verts);
+    free(indices);
 }
 
 
@@ -115,13 +141,13 @@ void drawHours(SDL_Renderer *renderer,uint32_t center_x,uint32_t center_y, uint3
       //  finding the ending point of line  where upto draw
       float edLine_x = center_x + (radius* 0.90f) * SDL_sinf(angle);
       float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
-      SDL_Color black = {0, 0, 0,255};
+      
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
       if(h==12 || h==3 || h==6 || h==9){
          
-         DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,black);
+         DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 5.0f,HOUR_MAJOR);
       }
-      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,black);
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 3.0f,HOUR_MINOR);
 
  
    }
@@ -140,10 +166,10 @@ void secondTick(SDL_Renderer *renderer ,uint32_t center_x, uint32_t center_y,uin
       //  finding the ending point of line  where upto draw
       float edLine_x = center_x + (radius* 0.90f) * SDL_sinf(angle);
       float edLine_y = center_y - (radius*0.90f) * SDL_cosf(angle);
-      SDL_Color black = {239, 191, 4,255};
+      
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 2.0f,black);
+      DrawThickLine(renderer, stLine_x, stLine_y, edLine_x, edLine_y, 2.0f,MINUTE_TICK);
 
  
    
@@ -171,7 +197,7 @@ void getCurrentTime(int* hours, int* minutes, int* seconds)
 
 void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int seconds)
 {
-    SDL_Color black = {0, 0, 0, 255};
+    
 
     // each second = 6° (360° / 60 = 6°)
     float angle = seconds * 6.0f * (SDL_PI_F / 180.0f);
@@ -183,13 +209,13 @@ void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int 
     float ex = cx + radius * 0.85f * SDL_sinf(angle);
     float ey = cy - radius * 0.85f * SDL_cosf(angle);
 
-    DrawThickLine(renderer, sx, sy, ex, ey, 1.0f, black);
+    DrawThickLine(renderer, sx, sy, ex, ey, 1.0f, HAND_SECOND);
 }
 
 
 //  for minute hand 
  void drawMinuteHand(SDL_Renderer* renderer,uint32_t cx ,uint32_t cy, float radius,int minutes){
-    SDL_Color black = {0, 0, 0, 255};
+    
 
     // each second = 6° (360° / 60 = 6°)
     float angle = minutes * 6.0f * (SDL_PI_F / 180.0f);
@@ -201,14 +227,14 @@ void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int 
     float ex = cx + radius * 0.75f * SDL_sinf(angle);
     float ey = cy - radius * 0.75f * SDL_cosf(angle);
 
-    DrawThickLine(renderer, sx, sy, ex, ey, 2.0f, black);
+    DrawThickLine(renderer, sx, sy, ex, ey, 2.0f, HAND_MINUTE);
  }
 
 
 //   for hour hand 
 
  void drawHourHand(SDL_Renderer* renderer,uint32_t cx ,uint32_t cy, float radius,int hour,int minutes){
-    SDL_Color black = {0, 0, 0, 255};
+    
 
     int hours12 = hour % 12;
     
@@ -223,7 +249,7 @@ void drawSecondHand(SDL_Renderer* renderer,float cx, float cy, float radius,int 
     float ex = cx + radius * 0.5f * SDL_sinf(angle);
     float ey = cy - radius * 0.5f * SDL_cosf(angle);
 
-    DrawThickLine(renderer, sx, sy, ex, ey, 5.0f, black);
+    DrawThickLine(renderer, sx, sy, ex, ey, 5.0f, HAND_HOUR);
  }
 
 int main(){
@@ -248,12 +274,10 @@ int main(){
             int hours, minutes, seconds;
             getCurrentTime(&hours, &minutes, &seconds);
 
-            SDL_SetRenderDrawColor(renderer, 204, 204, 255, 0);
+            SDL_SetRenderDrawColor(renderer, BG_COLOR.r,BG_COLOR.g,BG_COLOR.b,255);
             SDL_RenderClear(renderer);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            DrawCircle(renderer,300,300,250);
-            DrawCircle(renderer,300,300,249);
-            DrawCircle(renderer,300,300,248);
+            DrawCircleOutline(renderer, CENTER_X, CENTER_Y, RADIUS, 6.0f, RING_GOLD, 128);
+         DrawCircleOutline(renderer, CENTER_X, CENTER_Y, RADIUS - 8, 3.0f, RING_DARK, 128);
 
             //  function to draw hour line
             drawHours(renderer, CENTER_X, CENTER_Y, RADIUS);
