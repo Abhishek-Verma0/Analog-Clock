@@ -1,7 +1,4 @@
 clock.exe
-bin
-include
-lib
-share
+
 demo.c
 demo.exe
