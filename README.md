@@ -4,7 +4,7 @@ A beautifully rendered, real-time analog clock written in C using **SDL3**. This
 
 ## Demo
 
-<video src="demo.mp4" controls autoplay loop muted style="max-width: 100%;"></video>
+<video src="https://github.com/Abhishek-Verma0/Analog-Clock/raw/main/demo.mp4" controls autoplay loop muted style="max-width: 100%;"></video>
 
 
 
